@@ -1,0 +1,39 @@
+#Librerias
+import numpy as np
+import pandas as pd
+from pandas import ExcelWriter
+
+#carga del archivo excel
+data = pd.read_excel('evmor_00.xlsx','Valor')
+
+#eliminar variables con más del 40% de perdida de datos
+nom=data.columns
+Inx=[]
+dataClean=[]
+countNom=0
+for i in nom:
+    count=0
+    column=data[i]
+    column=column.fillna(0)
+    aux=type(column[1])
+    if (aux==np.int64)or(aux==np.float64):
+        for j in column:
+            if j==0:
+                count=count+1
+        if count<=(float(len(column))*0.40):
+            dataClean.append(column)
+            Inx.append(nom[countNom])
+    else:
+        dataClean.append(column)
+        Inx.append(nom[countNom])
+    countNom+=1
+    
+#Conservar datos por estado (quitamos los municipios de cada estado), valores en porcentaje(diferente medicion) y totales(inconsistencia)
+dataClean
+dataClean=np.array(dataClean)
+arr=[]
+for i in range(dataClean.shape[1]):
+    if (dataClean[1,i]!='No especificada')and(dataClean[3,i]=='Estatal')and(dataClean[34,i]=='Defunciones registradas')and((dataClean[4,i]!=1002000030)and(dataClean[4,i]!=1002000034)and(dataClean[4,i]!=6300000264)):
+        arr.append(dataClean[:,i])
+datos=pd.DataFrame(data=arr,columns=Inx)
+datos_json=datos.to_csv("Data_clean.csv")
